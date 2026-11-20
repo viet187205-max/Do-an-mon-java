@@ -1,0 +1,20 @@
+package vn.edu.sales.ui;
+
+import vn.edu.sales.dao.SalesDAO;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.text.NumberFormat;
+import java.util.Locale;
+
+public class DashboardPanel extends JPanel implements MainFrame.Refreshable {
+    private final SalesDAO dao;private final JLabel[] values=new JLabel[5];
+    private final String[] labels={"Sản phẩm đang bán","Khách hàng","Hóa đơn hôm nay","Doanh thu tháng","Tổng tồn kho"};
+    public DashboardPanel(SalesDAO dao){this.dao=dao;setLayout(new BorderLayout(0,18));setBackground(Theme.BG);setBorder(new EmptyBorder(24,27,26,27));
+        JPanel intro=new JPanel(new BorderLayout());intro.setOpaque(false);JPanel txt=new JPanel(new GridLayout(2,1,0,4));txt.setOpaque(false);txt.add(Theme.heading("Xin chào, quản trị viên!",23,Theme.TEXT));JLabel s=new JLabel("Đây là bức tranh tổng quan về hoạt động kinh doanh của cửa hàng.");s.setForeground(Theme.MUTED);txt.add(s);intro.add(txt,BorderLayout.WEST);JLabel badge=new JLabel("MARKETFLOW  /  BUSINESS OVERVIEW");badge.setForeground(Theme.ACCENT_DARK);badge.setFont(new Font("Segoe UI",Font.BOLD,10));intro.add(badge,BorderLayout.EAST);add(intro,BorderLayout.NORTH);
+        JPanel body=new JPanel(new BorderLayout(0,18));body.setOpaque(false);JPanel stats=new JPanel(new GridLayout(1,5,12,12));stats.setOpaque(false);Color[] colors={Theme.ACCENT,new Color(83,120,181),Theme.GREEN,new Color(171,125,65),new Color(126,105,163)};
+        for(int i=0;i<5;i++){JPanel card=Theme.card();card.setLayout(new BorderLayout(0,12));JPanel top=new JPanel(new BorderLayout());top.setOpaque(false);JLabel name=new JLabel(labels[i]);name.setForeground(Theme.MUTED);name.setFont(new Font("Segoe UI",Font.PLAIN,11));JLabel dot=new JLabel("●");dot.setForeground(colors[i]);top.add(name,BorderLayout.WEST);top.add(dot,BorderLayout.EAST);values[i]=Theme.heading("—",25,Theme.TEXT);JLabel foot=new JLabel(i==3?"VND / tháng hiện tại":"Dữ liệu từ SQL Server");foot.setForeground(Theme.MUTED);foot.setFont(new Font("Segoe UI",Font.PLAIN,10));card.add(top,BorderLayout.NORTH);card.add(values[i],BorderLayout.CENTER);card.add(foot,BorderLayout.SOUTH);stats.add(card);}body.add(stats,BorderLayout.NORTH);
+        JPanel lower=new JPanel(new GridLayout(1,2,14,0));lower.setOpaque(false);JPanel introCard=Theme.card();introCard.setLayout(new BorderLayout(0,12));introCard.add(Theme.heading("QUẢN LÝ BÁN HÀNG",15,Theme.TEXT),BorderLayout.NORTH);JTextArea msg=new JTextArea("MARKETFLOW hỗ trợ cửa hàng quản lý danh mục, sản phẩm, khách hàng, hóa đơn và số lượng tồn kho.\n\nCác thao tác được thực hiện qua giao diện Java Swing và lưu trực tiếp vào SQL Server bằng JDBC. Khi tạo hóa đơn, hệ thống kiểm tra tồn kho và cập nhật số lượng trong cùng giao dịch.");msg.setWrapStyleWord(true);msg.setLineWrap(true);msg.setEditable(false);msg.setFocusable(false);msg.setOpaque(false);msg.setForeground(Theme.MUTED);msg.setFont(Theme.FONT);introCard.add(msg,BorderLayout.CENTER);
+        JPanel flow=Theme.card();flow.setLayout(new BorderLayout(0,12));flow.add(Theme.heading("QUY TRÌNH BÁN HÀNG",15,Theme.TEXT),BorderLayout.NORTH);JPanel steps=new JPanel(new GridLayout(4,1,0,8));steps.setOpaque(false);for(String v:new String[]{"01   Quản lý danh mục và sản phẩm","02   Tiếp nhận hoặc chọn khách hàng","03   Lập hóa đơn và thêm sản phẩm","04   Xác nhận thanh toán, trừ tồn kho"}){JLabel l=new JLabel(v);l.setFont(new Font("Segoe UI",Font.BOLD,12));l.setForeground(Theme.TEXT);l.setOpaque(true);l.setBackground(new Color(255,245,238));l.setBorder(new EmptyBorder(9,11,9,11));steps.add(l);}flow.add(steps,BorderLayout.CENTER);lower.add(introCard);lower.add(flow);body.add(lower,BorderLayout.CENTER);add(body,BorderLayout.CENTER);refreshData();}
+    @Override public void refreshData(){try{long[] a=dao.dashboardStats();for(int i=0;i<5;i++)values[i].setText(i==3?NumberFormat.getNumberInstance(new Locale("vi","VN")).format(a[i])+" đ":String.format("%,d",a[i]));}catch(Exception ex){for(JLabel l:values)l.setText("—");}}
+}
